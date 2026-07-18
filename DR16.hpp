@@ -213,6 +213,7 @@ class DR16 : public LibXR::Application {
 
           if (dr16->ParseRC(frame_window, rc_data) == LibXR::ErrorCode::OK) {
             dr16->last_time_ = LibXR::Timebase::GetMilliseconds();
+            dr16->cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, rc_data);
             frame_window_size = 0;
           }
         }
@@ -342,7 +343,6 @@ class DR16 : public LibXR::Application {
     output_data.gimbal_online = true;
     output_data.ctrl_source = CMD::ControlSource::CTRL_SOURCE_RC;
 
-    this->cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, output_data);
     if (this->offline_latched_) {
       /* 断链恢复后的首帧仅用于建立边沿基线，避免误触发事件 */
       this->last_data_ = curr_rc;
@@ -482,7 +482,9 @@ class DR16 : public LibXR::Application {
   void CheckoutOffline() {
     auto current_time = LibXR::Timebase::GetMilliseconds();
     if ((current_time - last_time_).ToMillisecond() > 100) {
-      Offline();
+      if (!this->offline_latched_) {
+        Offline();
+      }
     }
   }
 };
