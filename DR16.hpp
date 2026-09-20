@@ -287,13 +287,13 @@ class DR16 : public LibXR::Application {
     constexpr float INV_FULL_RANGE = 1.0f / FULL_RANGE;
     constexpr float MOUSE_SCALER = 20.0f / 32768.0f;
 
-    output_data.chassis.x =
+    output_data.chassis.operator_input.x =
         2 * (static_cast<float>(curr_rc.ch_l_x) - DR16_CH_VALUE_MID) *
         INV_FULL_RANGE;
-    output_data.chassis.y =
+    output_data.chassis.operator_input.y =
         2 * (static_cast<float>(curr_rc.ch_l_y) - DR16_CH_VALUE_MID) *
         INV_FULL_RANGE;
-    output_data.chassis.z =
+    output_data.chassis.operator_input.z =
         -2 * (static_cast<float>(curr_rc.ch_r_x) - DR16_CH_VALUE_MID) *
         INV_FULL_RANGE;
 
@@ -305,16 +305,16 @@ class DR16 : public LibXR::Application {
         INV_FULL_RANGE;
 
     if (curr_rc.key & RawValue(Key::KEY_A)) {
-      output_data.chassis.x -= 1.0f;
+      output_data.chassis.operator_input.x -= 1.0f;
     }
     if (curr_rc.key & RawValue(Key::KEY_D)) {
-      output_data.chassis.x += 1.0f;
+      output_data.chassis.operator_input.x += 1.0f;
     }
     if (curr_rc.key & RawValue(Key::KEY_S)) {
-      output_data.chassis.y -= 1.0f;
+      output_data.chassis.operator_input.y -= 1.0f;
     }
     if (curr_rc.key & RawValue(Key::KEY_W)) {
-      output_data.chassis.y += 1.0f;
+      output_data.chassis.operator_input.y += 1.0f;
     }
 
     output_data.chassis.self_define = CMD::ChasStat::NONE;
@@ -332,9 +332,12 @@ class DR16 : public LibXR::Application {
       output_data.chassis.self_define = CMD::ChasStat::STRETCH;
     }
 
-    output_data.chassis.x = std::clamp(output_data.chassis.x, -1.0f, 1.0f);
-    output_data.chassis.y = std::clamp(output_data.chassis.y, -1.0f, 1.0f);
-    output_data.chassis.z = std::clamp(output_data.chassis.z, -1.0f, 1.0f);
+    output_data.chassis.operator_input.x =
+        std::clamp(output_data.chassis.operator_input.x, -1.0f, 1.0f);
+    output_data.chassis.operator_input.y =
+        std::clamp(output_data.chassis.operator_input.y, -1.0f, 1.0f);
+    output_data.chassis.operator_input.z =
+        std::clamp(output_data.chassis.operator_input.z, -1.0f, 1.0f);
 
     output_data.launcher.isfire =
         (curr_rc.res == DR16_CH_VALUE_MIN) or (curr_rc.press_l == 1);
@@ -347,6 +350,7 @@ class DR16 : public LibXR::Application {
       /* 断链恢复后的首帧仅用于建立边沿基线，避免误触发事件 */
       this->last_data_ = curr_rc;
       this->offline_latched_ = false;
+      this->SyncSwitchEvents();
     } else {
       this->ActivateChangedEvents(curr_rc);
       this->last_data_ = curr_rc;
@@ -356,9 +360,9 @@ class DR16 : public LibXR::Application {
   }
 
   void Offline() {
-    cmd_data_.chassis.x = 0;
-    cmd_data_.chassis.y = 0;
-    cmd_data_.chassis.z = 0;
+    cmd_data_.chassis.operator_input.x = 0;
+    cmd_data_.chassis.operator_input.y = 0;
+    cmd_data_.chassis.operator_input.z = 0;
     cmd_data_.chassis.self_define = CMD::ChasStat::NONE;
 
     cmd_data_.gimbal.yaw = 0;

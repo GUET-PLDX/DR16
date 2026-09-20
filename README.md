@@ -9,6 +9,7 @@ Manifest 描述：Receiver parsing
 2. ParseRC: 解析原始帧并生成 CMD::Data。
 3. CheckoutOffline / Offline: 离线检测与失控处理。
 4. GetEvent: 对外暴露事件绑定入口。
+5. SyncSwitchEvents: 补发当前左右拨杆。上电绑定完成后、以及遥控断链恢复的首帧会调用；键盘和鼠标边沿仍以该帧为基线，避免把按住的键当成新按下。
 
 ## 3. 接入步骤
 1. 添加模块并确保 uart_dr16 配置正确。
