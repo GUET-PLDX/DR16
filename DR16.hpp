@@ -30,6 +30,11 @@ required_hardware: dr16 dma uart
 #define DR16_CH_VALUE_MID (1024u) /* 閫氶亾涓棿鍊� */
 #define DR16_CH_VALUE_MAX (1684u) /* 閫氶亾鏈€澶у€� */
 
+/* DR16 switch raw value: 1 = top, 2 = bottom, 3 = middle. */
+#define DR16_SW_VALUE_UP (1u)   /* Switch top position */
+#define DR16_SW_VALUE_DOWN (2u) /* Switch bottom position */
+#define DR16_SW_VALUE_MID (3u)  /* Switch middle position */
+
 /**
  * @class DR16
  * @brief DR16閬ユ帶鍣ㄦ暟鎹В鏋愮被
@@ -340,7 +345,8 @@ class DR16 : public LibXR::Application {
         std::clamp(output_data.chassis.operator_input.z, -1.0f, 1.0f);
 
     output_data.launcher.isfire =
-        (curr_rc.res == DR16_CH_VALUE_MIN) or (curr_rc.press_l == 1);
+        (curr_rc.res == DR16_CH_VALUE_MIN) or (curr_rc.press_l == 1) or
+        (curr_rc.sw_r == DR16_SW_VALUE_MID); /* Right switch middle: feed */
 
     output_data.chassis_online = true;
     output_data.gimbal_online = true;
