@@ -149,7 +149,7 @@ class DR16 : public LibXR::Application {
        LibXR::Thread::Priority thread_priority_uart =
            LibXR::Thread::Priority::MEDIUM)
       : cmd_(&cmd),
-        uart_(hw.Find<LibXR::UART>("uart_dr16")),
+        uart_(hw.template FindOrExit<LibXR::UART>({"uart_dr16"})),
         sem_(0),
         op_(sem_, 4) {
     uart_->SetConfig({100000, LibXR::UART::Parity::EVEN, 8, 1});
