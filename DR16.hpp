@@ -1,14 +1,10 @@
 #pragma once
 
 /* clang-format off */
-/* === MODULE MANIFEST ===
-module_name: DR16
+/* === MODULE MANIFEST V2 ===
 module_description: Receiver parsing
-constructor_args:
-  - CMD: '@cmd'
-  - task_stack_depth_uart: 2048
-  - thread_priority_uart: LibXR::Thread::Priority::HIGH
-required_hardware: dr16 dma uart
+depends:
+  - id: GUET-PLDX/CMD
 === END MANIFEST === */
 // clang-format on
 
@@ -18,7 +14,7 @@ required_hardware: dr16 dma uart
 #include <cstring>
 
 #include "CMD.hpp"
-#include "app_framework.hpp"
+#include "libxr.hpp"
 #include "thread.hpp"
 #include "timebase.hpp"
 #include "uart.hpp"
@@ -41,7 +37,7 @@ required_hardware: dr16 dma uart
  * @details
  * 璐熻矗鎺ユ敹鍜岃В鏋怐R16閬ユ帶鍣ㄧ殑鏁版嵁锛屽寘鎷憞鏉嗭拷锟斤拷鎷ㄦ潌鍜屾寜閿瓑淇℃伅
  */
-class DR16 : public LibXR::Application {
+class DR16 {
  public:
   /**
    * @brief 鎷ㄦ潌寮€鍏充綅缃灇涓�
@@ -138,25 +134,18 @@ class DR16 : public LibXR::Application {
 
   /**
    * @brief DR16鏋勯€犲嚱鏁�
-   * @param hw 纭欢瀹瑰櫒寮曠敤
-   * @param app 搴旂敤绠＄悊鍣ㄥ紩鐢�
    * @param cmd 鎺у埗鍛戒护瀵硅薄寮曠敤
    * @param task_stack_depth_uart UART浠诲姟鏍堟繁搴�
    * @param cmd_data_tp_name CMD鏁版嵁涓婚鍚嶇О
    */
-  DR16(LibXR::HardwareContainer& hw, LibXR::ApplicationManager& app, CMD& cmd,
-       uint32_t task_stack_depth_uart,
+  DR16(LibXR::UART& uart, CMD& cmd, uint32_t task_stack_depth_uart,
        LibXR::Thread::Priority thread_priority_uart =
            LibXR::Thread::Priority::MEDIUM)
-      : cmd_(&cmd),
-        uart_(hw.template FindOrExit<LibXR::UART>({"uart_dr16"})),
-        sem_(0),
-        op_(sem_, 4) {
+      : cmd_(&cmd), uart_((&uart)), sem_(0), op_(sem_, 4) {
     uart_->SetConfig({100000, LibXR::UART::Parity::EVEN, 8, 1});
     /* 鍒涘缓UART绾跨▼ */
     thread_uart_.Create(this, ThreadDr16, "uart_dr16", task_stack_depth_uart,
                         thread_priority_uart);
-    app.Register(*this);
   }
 
   /**
@@ -187,7 +176,7 @@ class DR16 : public LibXR::Application {
   /**
    * @brief 鐩戞帶鍑芥暟閲嶅啓
    */
-  void OnMonitor() override {}
+  void OnMonitor() {}
 
   /**
    * @brief DR16 UART璇诲彇绾跨▼鍑芥暟
