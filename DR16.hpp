@@ -4,7 +4,7 @@
 /* === MODULE MANIFEST V2 ===
 module_description: Receiver parsing
 depends:
-  - id: GUET-PLDX/CMD
+- id: GUET-PLDX/CMD
 === END MANIFEST === */
 // clang-format on
 
@@ -138,10 +138,10 @@ class DR16 {
    * @param task_stack_depth_uart UART浠诲姟鏍堟繁搴�
    * @param cmd_data_tp_name CMD鏁版嵁涓婚鍚嶇О
    */
-  DR16(LibXR::UART& uart, CMD& cmd, uint32_t task_stack_depth_uart,
+  DR16(LibXR::UART& uart, CMD& cmd, uint32_t task_stack_depth_uart = 2048,
        LibXR::Thread::Priority thread_priority_uart =
-           LibXR::Thread::Priority::MEDIUM)
-      : cmd_(&cmd), uart_((&uart)), sem_(0), op_(sem_, 4) {
+           LibXR::Thread::Priority::HIGH)
+      : cmd_(&cmd), uart_(&uart), sem_(0), op_(sem_, 4) {
     uart_->SetConfig({100000, LibXR::UART::Parity::EVEN, 8, 1});
     /* 鍒涘缓UART绾跨▼ */
     thread_uart_.Create(this, ThreadDr16, "uart_dr16", task_stack_depth_uart,
