@@ -20,15 +20,11 @@ depends:
 #include "uart.hpp"
 
 /**
- * @brief
- * DR16闁儲甯堕崳銊┾偓姘朵壕閸婅壈瀵栭崶鏉戠暰娑旓拷
+ * @brief DR16 遥控器通道的取值范围。
  */
-#define DR16_CH_VALUE_MIN \
-  (364u) /* 闁岸浜鹃張鈧亸蹇撯偓锟� */
-#define DR16_CH_VALUE_MID (1024u) /* 闁岸浜炬稉顓㈡？閸婏拷 */
-#define DR16_CH_VALUE_MAX                            \
-  (1684u) /* 闁岸浜鹃張鈧径褍鈧拷 \
-           */
+#define DR16_CH_VALUE_MIN (364u)  /* 通道最小值 */
+#define DR16_CH_VALUE_MID (1024u) /* 通道中间值 */
+#define DR16_CH_VALUE_MAX (1684u) /* 通道最大值 */
 
 /* DR16 switch raw value: 1 = top, 2 = bottom, 3 = middle. */
 #define DR16_SW_VALUE_UP (1u)   /* Switch top position */
@@ -37,14 +33,14 @@ depends:
 
 /**
  * @class DR16
- * @brief DR16闁儲甯堕崳銊︽殶閹诡喛袙閺嬫劗琚�
- * @details
- * 鐠愮喕鐭楅幒銉︽暪閸滃矁袙閺嬫€怰16闁儲甯堕崳銊ф畱閺佺増宓侀敍灞藉瘶閹奉剚鎲為弶鍡嫹閿熸枻鎷烽幏銊︽綄閸滃本瀵滈柨顔剧搼娣団剝浼�
+ * @brief DR16 遥控器 DBUS 接收与解析。
+ * @details 从 UART 读取 18 字节 DBUS 帧，校验通道范围与拨杆状态，
+ *          解码为 CMD::Data 后提交给 CMD，并在拨杆或按键变化时触发事件。
  */
 class DR16 {
  public:
   /**
-   * @brief 閹枫劍娼屽鈧崗鍏呯秴缂冾喗鐏囨稉锟�
+   * @brief 拨杆位置枚举。
    */
   enum class SwitchPos : uint8_t {
     DR16_SW_L_POS_TOP = 0x00,
@@ -57,10 +53,7 @@ class DR16 {
   };
 
   /**
-   * @brief 閹稿鏁弸姘    SET_MODE_RELAX,
-    SET_MODE_FOLLOW,
-    SET_MODE_ROTOR,
-    SET_MODE_INDENPENDENT,
+   * @brief 按键编号；按键以位图形式存放在 Data::key 中。
    */
   enum class Key : uint8_t {
     KEY_W = static_cast<uint8_t>(SwitchPos::DR16_SW_POS_NUM),
@@ -87,27 +80,27 @@ class DR16 {
   };
 
   /**
-   * @brief 鐠侊紕鐣籗hift缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
-   * @param key 閸╄櫣顢呴幐澶愭暛
-   * @return Shift缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @brief 计算带 Shift 修饰的按键事件编号。
+   * @param key 基础按键。
+   * @return 带 Shift 修饰的事件编号。
    */
   constexpr uint32_t ShiftWith(Key key) {
     return static_cast<uint8_t>(key) + 1 * static_cast<uint8_t>(Key::KEY_NUM);
   }
 
   /**
-   * @brief 鐠侊紕鐣籆trl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
-   * @param key 閸╄櫣顢呴幐澶愭暛
-   * @return Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @brief 计算带 Ctrl 修饰的按键事件编号。
+   * @param key 基础按键。
+   * @return 带 Ctrl 修饰的事件编号。
    */
   constexpr uint32_t CtrlWith(Key key) {
     return static_cast<uint8_t>(key) + 2 * static_cast<uint8_t>(Key::KEY_NUM);
   }
 
   /**
-   * @brief 鐠侊紕鐣籗hift+Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
-   * @param key 閸╄櫣顢呴幐澶愭暛
-   * @return Shift+Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @brief 计算带 Shift+Ctrl 修饰的按键事件编号。
+   * @param key 基础按键。
+   * @return 带 Shift+Ctrl 修饰的事件编号。
    */
   constexpr uint32_t ShiftCtrlWith(Key key) {
     return static_cast<uint8_t>(key) + 3 * static_cast<uint8_t>(Key::KEY_NUM);
@@ -137,32 +130,33 @@ class DR16 {
   } Data;
 
   /**
-   * @brief DR16閺嬪嫰鈧姴鍤遍弫锟�
-   * @param cmd 閹貉冨煑閸涙垝鎶ょ€电钖勫鏇犳暏
-   * @param task_stack_depth_uart UART娴犺濮熼弽鍫熺箒鎼达拷
-   * @param cmd_data_tp_name CMD閺佺増宓佹稉濠氼暯閸氬秶袨
+   * @brief 构造 DR16，配置 UART 并创建接收线程。
+   * @param uart DBUS 串口；本构造配置为 100000 bps、偶校验、8 数据位、1
+   * 停止位。
+   * @param cmd 命令接收方 CMD。
+   * @param task_stack_depth_uart UART 接收线程栈大小，字节。
+   * @param thread_priority_uart UART 接收线程优先级。
    */
   DR16(LibXR::UART& uart, CMD& cmd, uint32_t task_stack_depth_uart = 2048,
        LibXR::Thread::Priority thread_priority_uart =
            LibXR::Thread::Priority::HIGH)
       : cmd_(&cmd), uart_(&uart), sem_(0), op_(sem_, 4) {
     uart_->SetConfig({100000, LibXR::UART::Parity::EVEN, 8, 1});
-    /*閸掓稑缂揢ART缁捐法鈻� */
+    /* 创建 UART 接收线程 */
     thread_uart_.Create(this, ThreadDr16, "uart_dr16", task_stack_depth_uart,
                         thread_priority_uart);
   }
 
   /**
-   * @brief 閼惧嘲褰� DR16 閻ㄥ嫪绨ㄦ禒璺侯槱閻炲棗娅�
-   * @return LibXR::Event&
-   * 娴滃娆㈡径鍕倞閸ｃ劎娈戝鏇犳暏
+   * @brief 获取 DR16 的事件对象。
+   * @return LibXR::Event& 拨杆与按键事件。
    */
   LibXR::Event& GetEvent() { return dr16_event_; }
 
   /**
-   * @brief 鍚屾褰撳墠鎷ㄦ潌鐘舵€佷簨浠�
-   * @details
-   * 鐢ㄤ簬浜嬩欢缁戝畾瀹屾垚鍚庤ˉ鍙戝綋鍓嶆嫧鏉嗙姸鎬侊紝閬垮厤涓婄數棣栧抚浜嬩欢鏃╀簬缁戝畾鑰屼涪澶便€�
+   * @brief 同步当前拨杆位置事件。
+   * @details 事件绑定完成后补发当前拨杆状态，
+   *          避免首个状态事件早于绑定而丢失。
 
    */
   void RequestSwitchSync() { SyncSwitchEvents(); }
@@ -181,13 +175,13 @@ class DR16 {
   }
 
   /**
-   * @brief 閻╂垶甯堕崙鑺ユ殶闁插秴鍟�
+   * @brief 监控循环空实现；接收由 UART 线程完成。
    */
   void OnMonitor() {}
 
   /**
-   * @brief DR16 UART鐠囪褰囩痪璺ㄢ柤閸戣姤鏆�
-   * @param dr16 DR16鐎圭偘绶ラ幐鍥嫛
+   * @brief DR16 UART 接收线程入口。
+   * @param dr16 DR16 对象指针。
    */
   static void ThreadDr16(DR16* dr16) {
     constexpr std::size_t RX_BUFFER_SIZE = 18;
@@ -228,16 +222,10 @@ class DR16 {
   }
 
   /**
-   * @brief
-   * 鐟欙絾鐎介柆銉﹀付閸ｃ劍鏆熼幑顔艰嫙鏉烆剚宕叉稉鐑樺付閸掕泛鎳℃禒锟�
-   */
-  /**
-   * @brief 鍦� CMD 鎵€灞炰换鍔¤В鏋愬苟搴旂敤涓€甯� DBUS
-   * 鏁版嵁鍙婄粦瀹氫簨浠躲€�
-   * @param raw_data 18 瀛楄妭鏈夋晥鍘熷甯э紱UART
-   * 绾跨▼鍙皟鐢� DecodeRaw 鏍￠獙銆�
-   * @param output_data 鏈抚鐢熸垚鐨� CMD 鏁版嵁銆�
-   * @return LibXR::ErrorCode::OK 鎴愬姛锛涘叾浠栧€艰〃绀鸿緭鍏ユ棤鏁堛€�
+   * @brief 由 CMD 所属任务解析并应用一帧 DBUS 数据，同时触发绑定事件。
+   * @param raw_data 18 字节原始帧；UART 线程校验后调用本函数。
+   * @param output_data 本帧生成的 CMD 数据。
+   * @return LibXR::ErrorCode::OK 成功；其他值表示输入无效。
    */
   LibXR::ErrorCode ParseRC(const uint8_t* raw_data, CMD::Data& output_data) {
     Data curr_rc{};
@@ -306,8 +294,7 @@ class DR16 {
     output_data.ctrl_source = CMD::ControlSource::CTRL_SOURCE_RC;
 
     if (this->offline_latched_) {
-      /* 鏂摼鎭㈠鍚庣殑棣栧抚浠呯敤浜庡缓绔嬭竟娌垮熀绾匡紝閬垮厤璇Е鍙戜簨浠�
-       */
+      /* 断链恢复后的首帧只用于建立边沿基线，避免误触发事件 */
       this->last_data_ = curr_rc;
       this->offline_latched_ = false;
       this->SyncSwitchEvents();
@@ -341,29 +328,29 @@ class DR16 {
 #ifdef LIBXR_DEBUG_BUILD
   /**
    * @brief
-   * 閻€劋绨拫鍐槸閻ㄥ嫭鏆熼幑顔款潒閸ュ墽绮ㄩ弸鍕秼閿涘牓娼担宥呯厵閿涳拷
+   * @brief 调试构建下的数据视图，便于在调试器中查看原始字段。
    */
   struct DataView {
-    uint16_t ch_r_x; /* 閸欒櫕鎲為弶鍝潪锟� */
-    uint16_t ch_r_y; /* 閸欒櫕鎲為弶鍝潪锟� */
-    uint16_t ch_l_x; /* 瀹革附鎲為弶鍝潪锟� */
-    uint16_t ch_l_y; /* 瀹革附鎲為弶鍝潪锟� */
-    uint8_t sw_r;    /* 閸欒櫕瀚ч弶锟� */
-    uint8_t sw_l;    /* 瀹革附瀚ч弶锟� */
-    int16_t x;       /* 姒х姵鐖鏉炲些閸旓拷 */
-    int16_t y;       /* 姒х姵鐖鏉炲些閸旓拷 */
-    int16_t z;       /* 姒х姵鐖鏉炲些閸旓拷 */
-    uint8_t press_l; /* 姒х姵鐖ｅ锕傛暛閻樿埖鈧拷 */
-    uint8_t press_r; /* 姒х姵鐖ｉ崣鎶芥暛閻樿埖鈧拷 */
-    uint16_t key;    /* 闁款喚娲忛幐澶愭暛閻樿埖鈧拷 */
-    uint16_t res;    /* 娣囨繄鏆€鐎涙顔� */
+    uint16_t ch_r_x; /* 右摇杆 X 通道原始值 */
+    uint16_t ch_r_y; /* 右摇杆 Y 通道原始值 */
+    uint16_t ch_l_x; /* 左摇杆 X 通道原始值 */
+    uint16_t ch_l_y; /* 左摇杆 Y 通道原始值 */
+    uint8_t sw_r;    /* 右拨杆位置 */
+    uint8_t sw_l;    /* 左拨杆位置 */
+    int16_t x;       /* 鼠标 X 位移 */
+    int16_t y;       /* 鼠标 Y 位移 */
+    int16_t z;       /* 鼠标滚轮位移 */
+    uint8_t press_l; /* 左键按下状态 */
+    uint8_t press_r; /* 右键按下状态 */
+    uint16_t key;    /* 键盘按键位图 */
+    uint16_t res;    /* 保留字段，用作备用档位判定 */
   };
 
   /**
    * @brief
-   * 鐏忓棔缍呴崺鐔告殶閹诡喛娴嗛幑顫礋閺咁噣鈧氨绮ㄩ弸鍕秼閺佺増宓侀敍鍫ｇ殶鐠囨洜鏁ら敍锟�
-   * @param data_view 鏉堟挸鍤惃鍕殶閹诡喛顫嬮崶锟�
-   * @param data 鏉堟挸鍙嗛惃鍕秴閸╃喐鏆熼幑锟�
+   * @brief 把解码后的数据拷贝到调试视图。
+   * @param data_view 调试视图。
+   * @param data 解码后的数据。
    */
   void DataviewToData(DataView& data_view, Data& data) {
     data_view.ch_r_x = data.ch_r_x;
@@ -425,26 +412,24 @@ class DR16 {
 
     return LibXR::ErrorCode::OK;
   }
-  CMD* cmd_; /* CMD濡€虫健閹稿洭鎷� */
+  CMD* cmd_; /* CMD 接收方 */
 
-  Data last_data_{};     /* 涓婁竴甯ф暟鎹� */
-  CMD::Data cmd_data_{}; /* 鍛戒护鏁版嵁 */
+  Data last_data_{};     /* 上一帧数据 */
+  CMD::Data cmd_data_{}; /* 离线时提交的命令数据 */
 
-  /* 绂荤嚎鍚庝笅涓€甯ф湁鏁堟暟鎹彧浣滀负杈规部鍩虹嚎
-   */
+  /* 断链后下一帧有效数据只作为边沿基线 */
   bool offline_latched_ = false;
 #ifndef NDEBUG
-  Data data_review_; /* 閸涙垝鎶ら弫鐗堝祦妫板嫯顫� */
+  Data data_review_; /* 最近一帧原始解码数据，供调试查看 */
 #endif
-  LibXR::UART* uart_;         /* UART閹恒儱褰涢幐鍥嫛 */
-  LibXR::Event dr16_event_;   /* 娴滃娆㈡径鍕倞閸ｏ拷 */
-  LibXR::Thread thread_uart_; /* UART缁捐法鈻� */
-  LibXR::Semaphore sem_;      /* 鐠囩粯鎼锋担婊€淇婇崣鐑藉櫤 */
-  LibXR::ReadOperation
-      op_; /* 鐠囩粯鎼锋担婊愮礄闂冭顢ｉ崹瀣剁礆 */
-  LibXR::MillisecondTimestamp last_time_{}; /* 娑撳﹥顐奸幒銉︽暪閺冨爼妫� */
+  LibXR::UART* uart_;                       /* UART 句柄 */
+  LibXR::Event dr16_event_;                 /* 拨杆与按键事件 */
+  LibXR::Thread thread_uart_;               /* UART 接收线程 */
+  LibXR::Semaphore sem_;                    /* 读操作信号量 */
+  LibXR::ReadOperation op_;                 /* UART 读操作 */
+  LibXR::MillisecondTimestamp last_time_{}; /* 最近一次有效帧时间 */
 
-  /*--------------------------瀹搞儱鍙块崙鑺ユ殶-------------------------------------------------*/
+  /*-------------------------- 事件处理 --------------------------*/
   void ActivateChangedEvents(const Data& curr_rc) {
     if (curr_rc.sw_l != this->last_data_.sw_l) {
       this->dr16_event_.Active(
