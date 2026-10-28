@@ -20,11 +20,15 @@ depends:
 #include "uart.hpp"
 
 /**
- * @brief DR16閬ユ帶鍣ㄩ€氶亾鍊艰寖鍥村畾涔�
+ * @brief
+ * DR16闁儲甯堕崳銊┾偓姘朵壕閸婅壈瀵栭崶鏉戠暰娑旓拷
  */
-#define DR16_CH_VALUE_MIN (364u)  /* 閫氶亾鏈€灏忓€� */
-#define DR16_CH_VALUE_MID (1024u) /* 閫氶亾涓棿鍊� */
-#define DR16_CH_VALUE_MAX (1684u) /* 閫氶亾鏈€澶у€� */
+#define DR16_CH_VALUE_MIN \
+  (364u) /* 闁岸浜鹃張鈧亸蹇撯偓锟� */
+#define DR16_CH_VALUE_MID (1024u) /* 闁岸浜炬稉顓㈡？閸婏拷 */
+#define DR16_CH_VALUE_MAX                            \
+  (1684u) /* 闁岸浜鹃張鈧径褍鈧拷 \
+           */
 
 /* DR16 switch raw value: 1 = top, 2 = bottom, 3 = middle. */
 #define DR16_SW_VALUE_UP (1u)   /* Switch top position */
@@ -33,14 +37,14 @@ depends:
 
 /**
  * @class DR16
- * @brief DR16閬ユ帶鍣ㄦ暟鎹В鏋愮被
+ * @brief DR16闁儲甯堕崳銊︽殶閹诡喛袙閺嬫劗琚�
  * @details
- * 璐熻矗鎺ユ敹鍜岃В鏋怐R16閬ユ帶鍣ㄧ殑鏁版嵁锛屽寘鎷憞鏉嗭拷锟斤拷鎷ㄦ潌鍜屾寜閿瓑淇℃伅
+ * 鐠愮喕鐭楅幒銉︽暪閸滃矁袙閺嬫€怰16闁儲甯堕崳銊ф畱閺佺増宓侀敍灞藉瘶閹奉剚鎲為弶鍡嫹閿熸枻鎷烽幏銊︽綄閸滃本瀵滈柨顔剧搼娣団剝浼�
  */
 class DR16 {
  public:
   /**
-   * @brief 鎷ㄦ潌寮€鍏充綅缃灇涓�
+   * @brief 閹枫劍娼屽鈧崗鍏呯秴缂冾喗鐏囨稉锟�
    */
   enum class SwitchPos : uint8_t {
     DR16_SW_L_POS_TOP = 0x00,
@@ -53,7 +57,7 @@ class DR16 {
   };
 
   /**
-   * @brief 鎸夐敭鏋氫妇    SET_MODE_RELAX,
+   * @brief 閹稿鏁弸姘    SET_MODE_RELAX,
     SET_MODE_FOLLOW,
     SET_MODE_ROTOR,
     SET_MODE_INDENPENDENT,
@@ -83,27 +87,27 @@ class DR16 {
   };
 
   /**
-   * @brief 璁＄畻Shift缁勫悎閿殑缂栫爜鍊�
-   * @param key 鍩虹鎸夐敭
-   * @return Shift缁勫悎閿殑缂栫爜鍊�
+   * @brief 鐠侊紕鐣籗hift缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @param key 閸╄櫣顢呴幐澶愭暛
+   * @return Shift缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
    */
   constexpr uint32_t ShiftWith(Key key) {
     return static_cast<uint8_t>(key) + 1 * static_cast<uint8_t>(Key::KEY_NUM);
   }
 
   /**
-   * @brief 璁＄畻Ctrl缁勫悎閿殑缂栫爜鍊�
-   * @param key 鍩虹鎸夐敭
-   * @return Ctrl缁勫悎閿殑缂栫爜鍊�
+   * @brief 鐠侊紕鐣籆trl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @param key 閸╄櫣顢呴幐澶愭暛
+   * @return Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
    */
   constexpr uint32_t CtrlWith(Key key) {
     return static_cast<uint8_t>(key) + 2 * static_cast<uint8_t>(Key::KEY_NUM);
   }
 
   /**
-   * @brief 璁＄畻Shift+Ctrl缁勫悎閿殑缂栫爜鍊�
-   * @param key 鍩虹鎸夐敭
-   * @return Shift+Ctrl缁勫悎閿殑缂栫爜鍊�
+   * @brief 鐠侊紕鐣籗hift+Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
+   * @param key 閸╄櫣顢呴幐澶愭暛
+   * @return Shift+Ctrl缂佸嫬鎮庨柨顔炬畱缂傛牜鐖滈崐锟�
    */
   constexpr uint32_t ShiftCtrlWith(Key key) {
     return static_cast<uint8_t>(key) + 3 * static_cast<uint8_t>(Key::KEY_NUM);
@@ -133,33 +137,36 @@ class DR16 {
   } Data;
 
   /**
-   * @brief DR16鏋勯€犲嚱鏁�
-   * @param cmd 鎺у埗鍛戒护瀵硅薄寮曠敤
-   * @param task_stack_depth_uart UART浠诲姟鏍堟繁搴�
-   * @param cmd_data_tp_name CMD鏁版嵁涓婚鍚嶇О
+   * @brief DR16閺嬪嫰鈧姴鍤遍弫锟�
+   * @param cmd 閹貉冨煑閸涙垝鎶ょ€电钖勫鏇犳暏
+   * @param task_stack_depth_uart UART娴犺濮熼弽鍫熺箒鎼达拷
+   * @param cmd_data_tp_name CMD閺佺増宓佹稉濠氼暯閸氬秶袨
    */
   DR16(LibXR::UART& uart, CMD& cmd, uint32_t task_stack_depth_uart = 2048,
        LibXR::Thread::Priority thread_priority_uart =
            LibXR::Thread::Priority::HIGH)
       : cmd_(&cmd), uart_(&uart), sem_(0), op_(sem_, 4) {
     uart_->SetConfig({100000, LibXR::UART::Parity::EVEN, 8, 1});
-    /* 鍒涘缓UART绾跨▼ */
+    /*閸掓稑缂揢ART缁捐法鈻� */
     thread_uart_.Create(this, ThreadDr16, "uart_dr16", task_stack_depth_uart,
                         thread_priority_uart);
   }
 
   /**
-   * @brief 鑾峰彇 DR16 鐨勪簨浠跺鐞嗗櫒
-   * @return LibXR::Event& 浜嬩欢澶勭悊鍣ㄧ殑寮曠敤
+   * @brief 閼惧嘲褰� DR16 閻ㄥ嫪绨ㄦ禒璺侯槱閻炲棗娅�
+   * @return LibXR::Event&
+   * 娴滃娆㈡径鍕倞閸ｃ劎娈戝鏇犳暏
    */
   LibXR::Event& GetEvent() { return dr16_event_; }
 
   /**
-   * @brief 同步当前拨杆状态事件
+   * @brief 鍚屾褰撳墠鎷ㄦ潌鐘舵€佷簨浠�
    * @details
-   * 用于事件绑定完成后补发当前拨杆状态，避免上电首帧事件早于绑定而丢失。
+   * 鐢ㄤ簬浜嬩欢缁戝畾瀹屾垚鍚庤ˉ鍙戝綋鍓嶆嫧鏉嗙姸鎬侊紝閬垮厤涓婄數棣栧抚浜嬩欢鏃╀簬缁戝畾鑰屼涪澶便€�
 
    */
+  void RequestSwitchSync() { SyncSwitchEvents(); }
+
   void SyncSwitchEvents() {
     if (last_data_.sw_l != 0) {
       this->dr16_event_.Active(
@@ -174,19 +181,20 @@ class DR16 {
   }
 
   /**
-   * @brief 鐩戞帶鍑芥暟閲嶅啓
+   * @brief 閻╂垶甯堕崙鑺ユ殶闁插秴鍟�
    */
   void OnMonitor() {}
 
   /**
-   * @brief DR16 UART璇诲彇绾跨▼鍑芥暟
-   * @param dr16 DR16瀹炰緥鎸囬拡
+   * @brief DR16 UART鐠囪褰囩痪璺ㄢ柤閸戣姤鏆�
+   * @param dr16 DR16鐎圭偘绶ラ幐鍥嫛
    */
   static void ThreadDr16(DR16* dr16) {
     constexpr std::size_t RX_BUFFER_SIZE = 18;
     uint8_t rx_buffer[RX_BUFFER_SIZE] = {0};
     uint8_t frame_window[RX_BUFFER_SIZE] = {0};
     std::size_t frame_window_size = 0;
+    Data decoded{};
     CMD::Data rc_data;
 
     auto last_time = LibXR::Timebase::GetMilliseconds();
@@ -205,9 +213,11 @@ class DR16 {
             continue;
           }
 
-          if (dr16->ParseRC(frame_window, rc_data) == LibXR::ErrorCode::OK) {
-            dr16->last_time_ = LibXR::Timebase::GetMilliseconds();
-            dr16->cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, rc_data);
+          if (DecodeRaw(frame_window, decoded) == LibXR::ErrorCode::OK) {
+            if (dr16->ParseRC(frame_window, rc_data) == LibXR::ErrorCode::OK) {
+              dr16->last_time_ = LibXR::Timebase::GetMilliseconds();
+              dr16->cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, rc_data);
+            }
             frame_window_size = 0;
           }
         }
@@ -219,21 +229,164 @@ class DR16 {
 
   /**
    * @brief
-   * 瑙ｆ瀽閬ユ帶鍣ㄦ暟鎹苟杞崲涓烘帶鍒跺懡浠�
+   * 鐟欙絾鐎介柆銉﹀付閸ｃ劍鏆熼幑顔艰嫙鏉烆剚宕叉稉鐑樺付閸掕泛鎳℃禒锟�
    */
   /**
-   * @brief 瑙ｆ瀽 DBUS 鍘熷鏁版嵁骞剁敓鎴愭帶鍒舵寚浠�
-   * @param raw_data 18瀛楄妭鐨勫師濮嬫帴鏀剁紦鍐� (鏉ヨ嚜 ThreadDr16 鐨�
-   * rx_buffer)
-   * @param output_data 瑙ｆ瀽鍚庣殑 CMD 鏁版嵁 (鐢ㄤ簬鎻愪氦缁欎簯鍙�)
-   * @return true 瑙ｆ瀽鎴愬姛, false 鏁版嵁鏃犳晥
+   * @brief 鍦� CMD 鎵€灞炰换鍔¤В鏋愬苟搴旂敤涓€甯� DBUS
+   * 鏁版嵁鍙婄粦瀹氫簨浠躲€�
+   * @param raw_data 18 瀛楄妭鏈夋晥鍘熷甯э紱UART
+   * 绾跨▼鍙皟鐢� DecodeRaw 鏍￠獙銆�
+   * @param output_data 鏈抚鐢熸垚鐨� CMD 鏁版嵁銆�
+   * @return LibXR::ErrorCode::OK 鎴愬姛锛涘叾浠栧€艰〃绀鸿緭鍏ユ棤鏁堛€�
    */
   LibXR::ErrorCode ParseRC(const uint8_t* raw_data, CMD::Data& output_data) {
+    Data curr_rc{};
+    const auto result = DecodeRaw(raw_data, curr_rc);
+    if (result != LibXR::ErrorCode::OK) return result;
+#ifndef NDEBUG
+    this->data_review_ = curr_rc;
+#endif
+    output_data = CMD::Data();
+
+    constexpr float FULL_RANGE =
+        static_cast<float>(DR16_CH_VALUE_MAX - DR16_CH_VALUE_MIN);
+    constexpr float INV_FULL_RANGE = 1.0f / FULL_RANGE;
+    constexpr float MOUSE_SCALER = 20.0f / 32768.0f;
+
+    output_data.chassis.vx =
+        2 * (static_cast<float>(curr_rc.ch_l_x) - DR16_CH_VALUE_MID) *
+        INV_FULL_RANGE;
+    output_data.chassis.vy =
+        2 * (static_cast<float>(curr_rc.ch_l_y) - DR16_CH_VALUE_MID) *
+        INV_FULL_RANGE;
+    output_data.chassis.wz =
+        -2 * (static_cast<float>(curr_rc.ch_r_x) - DR16_CH_VALUE_MID) *
+        INV_FULL_RANGE;
+
+    output_data.gimbal.yaw =
+        -2 * (static_cast<float>(curr_rc.ch_r_x) - DR16_CH_VALUE_MID) *
+        INV_FULL_RANGE;
+    output_data.gimbal.pit =
+        2 * (static_cast<float>(curr_rc.ch_r_y) - DR16_CH_VALUE_MID) *
+        INV_FULL_RANGE;
+
+    if (curr_rc.key & RawValue(Key::KEY_A)) {
+      output_data.chassis.vx -= 1.0f;
+    }
+    if (curr_rc.key & RawValue(Key::KEY_D)) {
+      output_data.chassis.vx += 1.0f;
+    }
+    if (curr_rc.key & RawValue(Key::KEY_S)) {
+      output_data.chassis.vy -= 1.0f;
+    }
+    if (curr_rc.key & RawValue(Key::KEY_W)) {
+      output_data.chassis.vy += 1.0f;
+    }
+
+    output_data.chassis.self_define = CMD::ChasStat::NONE;
+
+    output_data.gimbal.pit += static_cast<float>(curr_rc.y) * MOUSE_SCALER;
+    output_data.gimbal.yaw += -static_cast<float>(curr_rc.x) * MOUSE_SCALER;
+
+    if (curr_rc.key & RawValue(Key::KEY_SHIFT) or
+        curr_rc.res == DR16_CH_VALUE_MAX) {
+      output_data.chassis.self_define = CMD::ChasStat::BOOST;
+    }
+
+    output_data.chassis.vx = std::clamp(output_data.chassis.vx, -1.0f, 1.0f);
+    output_data.chassis.vy = std::clamp(output_data.chassis.vy, -1.0f, 1.0f);
+    output_data.chassis.wz = std::clamp(output_data.chassis.wz, -1.0f, 1.0f);
+
+    output_data.launcher.isfire =
+        (curr_rc.res == DR16_CH_VALUE_MIN) or (curr_rc.press_l == 1) or
+        (curr_rc.sw_r == DR16_SW_VALUE_MID); /* Right switch middle: feed */
+
+    output_data.chassis_online = true;
+    output_data.gimbal_online = true;
+    output_data.ctrl_source = CMD::ControlSource::CTRL_SOURCE_RC;
+
+    if (this->offline_latched_) {
+      /* 鏂摼鎭㈠鍚庣殑棣栧抚浠呯敤浜庡缓绔嬭竟娌垮熀绾匡紝閬垮厤璇Е鍙戜簨浠�
+       */
+      this->last_data_ = curr_rc;
+      this->offline_latched_ = false;
+      this->SyncSwitchEvents();
+    } else {
+      this->ActivateChangedEvents(curr_rc);
+      this->last_data_ = curr_rc;
+    }
+
+    return LibXR::ErrorCode::OK;
+  }
+
+  void Offline() {
+    cmd_data_.chassis.vx = 0;
+    cmd_data_.chassis.vy = 0;
+    cmd_data_.chassis.wz = 0;
+    cmd_data_.chassis.self_define = CMD::ChasStat::NONE;
+
+    cmd_data_.gimbal.yaw = 0;
+    cmd_data_.gimbal.pit = 0;
+
+    cmd_data_.launcher.isfire = false;
+
+    cmd_data_.chassis_online = false;
+    cmd_data_.gimbal_online = false;
+
+    cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, cmd_data_);
+    this->last_data_ = Data{};
+    this->offline_latched_ = true;
+  }
+
+#ifdef LIBXR_DEBUG_BUILD
+  /**
+   * @brief
+   * 閻€劋绨拫鍐槸閻ㄥ嫭鏆熼幑顔款潒閸ュ墽绮ㄩ弸鍕秼閿涘牓娼担宥呯厵閿涳拷
+   */
+  struct DataView {
+    uint16_t ch_r_x; /* 閸欒櫕鎲為弶鍝潪锟� */
+    uint16_t ch_r_y; /* 閸欒櫕鎲為弶鍝潪锟� */
+    uint16_t ch_l_x; /* 瀹革附鎲為弶鍝潪锟� */
+    uint16_t ch_l_y; /* 瀹革附鎲為弶鍝潪锟� */
+    uint8_t sw_r;    /* 閸欒櫕瀚ч弶锟� */
+    uint8_t sw_l;    /* 瀹革附瀚ч弶锟� */
+    int16_t x;       /* 姒х姵鐖鏉炲些閸旓拷 */
+    int16_t y;       /* 姒х姵鐖鏉炲些閸旓拷 */
+    int16_t z;       /* 姒х姵鐖鏉炲些閸旓拷 */
+    uint8_t press_l; /* 姒х姵鐖ｅ锕傛暛閻樿埖鈧拷 */
+    uint8_t press_r; /* 姒х姵鐖ｉ崣鎶芥暛閻樿埖鈧拷 */
+    uint16_t key;    /* 闁款喚娲忛幐澶愭暛閻樿埖鈧拷 */
+    uint16_t res;    /* 娣囨繄鏆€鐎涙顔� */
+  };
+
+  /**
+   * @brief
+   * 鐏忓棔缍呴崺鐔告殶閹诡喛娴嗛幑顫礋閺咁噣鈧氨绮ㄩ弸鍕秼閺佺増宓侀敍鍫ｇ殶鐠囨洜鏁ら敍锟�
+   * @param data_view 鏉堟挸鍤惃鍕殶閹诡喛顫嬮崶锟�
+   * @param data 鏉堟挸鍙嗛惃鍕秴閸╃喐鏆熼幑锟�
+   */
+  void DataviewToData(DataView& data_view, Data& data) {
+    data_view.ch_r_x = data.ch_r_x;
+    data_view.ch_r_y = data.ch_r_y;
+    data_view.ch_l_x = data.ch_l_x;
+    data_view.ch_l_y = data.ch_l_y;
+    data_view.sw_r = data.sw_r;
+    data_view.sw_l = data.sw_l;
+    data_view.x = data.x;
+    data_view.y = data.y;
+    data_view.z = data.z;
+    data_view.press_l = data.press_l;
+    data_view.press_r = data.press_r;
+    data_view.key = data.key;
+    data_view.res = data.res;
+  }
+#endif
+
+ private:
+  static LibXR::ErrorCode DecodeRaw(const uint8_t* raw_data, Data& curr_rc) {
     if (!raw_data) {
       return LibXR::ErrorCode::PTR_NULL;
     };
-
-    Data curr_rc{};
 
     curr_rc.ch_r_x = ((raw_data[0] | raw_data[1] << 8) & 0x07FF);
     curr_rc.ch_r_y = ((raw_data[1] >> 3 | raw_data[2] << 5) & 0x07FF);
@@ -255,10 +408,6 @@ class DR16 {
 
     curr_rc.res = static_cast<uint16_t>(raw_data[16] | raw_data[17] << 8);
 
-#ifndef NDEBUG
-    this->data_review_ = curr_rc;
-#endif
-
     if (curr_rc.ch_l_x < DR16_CH_VALUE_MIN ||
         curr_rc.ch_l_x > DR16_CH_VALUE_MAX ||
         curr_rc.ch_l_y < DR16_CH_VALUE_MIN ||
@@ -274,168 +423,28 @@ class DR16 {
       return LibXR::ErrorCode::CHECK_ERR;
     }
 
-    output_data = CMD::Data();
-
-    constexpr float FULL_RANGE =
-        static_cast<float>(DR16_CH_VALUE_MAX - DR16_CH_VALUE_MIN);
-    constexpr float INV_FULL_RANGE = 1.0f / FULL_RANGE;
-    constexpr float MOUSE_SCALER = 20.0f / 32768.0f;
-
-    output_data.chassis.operator_input.x =
-        2 * (static_cast<float>(curr_rc.ch_l_x) - DR16_CH_VALUE_MID) *
-        INV_FULL_RANGE;
-    output_data.chassis.operator_input.y =
-        2 * (static_cast<float>(curr_rc.ch_l_y) - DR16_CH_VALUE_MID) *
-        INV_FULL_RANGE;
-    output_data.chassis.operator_input.z =
-        -2 * (static_cast<float>(curr_rc.ch_r_x) - DR16_CH_VALUE_MID) *
-        INV_FULL_RANGE;
-
-    output_data.gimbal.yaw =
-        -2 * (static_cast<float>(curr_rc.ch_r_x) - DR16_CH_VALUE_MID) *
-        INV_FULL_RANGE;
-    output_data.gimbal.pit =
-        2 * (static_cast<float>(curr_rc.ch_r_y) - DR16_CH_VALUE_MID) *
-        INV_FULL_RANGE;
-
-    if (curr_rc.key & RawValue(Key::KEY_A)) {
-      output_data.chassis.operator_input.x -= 1.0f;
-    }
-    if (curr_rc.key & RawValue(Key::KEY_D)) {
-      output_data.chassis.operator_input.x += 1.0f;
-    }
-    if (curr_rc.key & RawValue(Key::KEY_S)) {
-      output_data.chassis.operator_input.y -= 1.0f;
-    }
-    if (curr_rc.key & RawValue(Key::KEY_W)) {
-      output_data.chassis.operator_input.y += 1.0f;
-    }
-
-    output_data.chassis.self_define = CMD::ChasStat::NONE;
-
-    output_data.gimbal.pit += static_cast<float>(curr_rc.y) * MOUSE_SCALER;
-    output_data.gimbal.yaw += -static_cast<float>(curr_rc.x) * MOUSE_SCALER;
-
-    if (curr_rc.key & RawValue(Key::KEY_SHIFT) or
-        curr_rc.res == DR16_CH_VALUE_MAX) {
-      output_data.chassis.self_define = CMD::ChasStat::BOOST;
-    }
-
-    if (curr_rc.key & RawValue(Key::KEY_C) or
-        curr_rc.res == DR16_CH_VALUE_MIN) {
-      output_data.chassis.self_define = CMD::ChasStat::STRETCH;
-    }
-
-    output_data.chassis.operator_input.x =
-        std::clamp(output_data.chassis.operator_input.x, -1.0f, 1.0f);
-    output_data.chassis.operator_input.y =
-        std::clamp(output_data.chassis.operator_input.y, -1.0f, 1.0f);
-    output_data.chassis.operator_input.z =
-        std::clamp(output_data.chassis.operator_input.z, -1.0f, 1.0f);
-
-    output_data.launcher.isfire =
-        (curr_rc.res == DR16_CH_VALUE_MIN) or (curr_rc.press_l == 1) or
-        (curr_rc.sw_r == DR16_SW_VALUE_MID); /* Right switch middle: feed */
-
-    output_data.chassis_online = true;
-    output_data.gimbal_online = true;
-    output_data.ctrl_source = CMD::ControlSource::CTRL_SOURCE_RC;
-
-    if (this->offline_latched_) {
-      /* 断链恢复后的首帧仅用于建立边沿基线，避免误触发事件 */
-      this->last_data_ = curr_rc;
-      this->offline_latched_ = false;
-      this->SyncSwitchEvents();
-    } else {
-      this->ActivateChangedEvents(curr_rc);
-      this->last_data_ = curr_rc;
-    }
-
     return LibXR::ErrorCode::OK;
   }
+  CMD* cmd_; /* CMD濡€虫健閹稿洭鎷� */
 
-  void Offline() {
-    cmd_data_.chassis.operator_input.x = 0;
-    cmd_data_.chassis.operator_input.y = 0;
-    cmd_data_.chassis.operator_input.z = 0;
-    cmd_data_.chassis.self_define = CMD::ChasStat::NONE;
+  Data last_data_{};     /* 涓婁竴甯ф暟鎹� */
+  CMD::Data cmd_data_{}; /* 鍛戒护鏁版嵁 */
 
-    cmd_data_.gimbal.yaw = 0;
-    cmd_data_.gimbal.pit = 0;
-
-    cmd_data_.launcher.isfire = false;
-
-    cmd_data_.chassis_online = false;
-    cmd_data_.gimbal_online = false;
-
-    cmd_->FeedRC(CMD::RCInputSource::RC_INPUT_DR16, cmd_data_);
-    this->last_data_ = Data{};
-    this->offline_latched_ = true;
-  }
-
-#ifdef LIBXR_DEBUG_BUILD
-  /**
-   * @brief
-   * 鐢ㄤ簬璋冭瘯鐨勬暟鎹鍥剧粨鏋勪綋锛堥潪浣嶅煙锛�
+  /* 绂荤嚎鍚庝笅涓€甯ф湁鏁堟暟鎹彧浣滀负杈规部鍩虹嚎
    */
-  struct DataView {
-    uint16_t ch_r_x; /* 鍙虫憞鏉哫杞� */
-    uint16_t ch_r_y; /* 鍙虫憞鏉哬杞� */
-    uint16_t ch_l_x; /* 宸︽憞鏉哫杞� */
-    uint16_t ch_l_y; /* 宸︽憞鏉哬杞� */
-    uint8_t sw_r;    /* 鍙虫嫧鏉� */
-    uint8_t sw_l;    /* 宸︽嫧鏉� */
-    int16_t x;       /* 榧犳爣X杞寸Щ鍔� */
-    int16_t y;       /* 榧犳爣Y杞寸Щ鍔� */
-    int16_t z;       /* 榧犳爣Z杞寸Щ鍔� */
-    uint8_t press_l; /* 榧犳爣宸﹂敭鐘舵€� */
-    uint8_t press_r; /* 榧犳爣鍙抽敭鐘舵€� */
-    uint16_t key;    /* 閿洏鎸夐敭鐘舵€� */
-    uint16_t res;    /* 淇濈暀瀛楁 */
-  };
-
-  /**
-   * @brief
-   * 灏嗕綅鍩熸暟鎹浆鎹负鏅€氱粨鏋勪綋鏁版嵁锛堣皟璇曠敤锛�
-   * @param data_view 杈撳嚭鐨勬暟鎹鍥�
-   * @param data 杈撳叆鐨勪綅鍩熸暟鎹�
-   */
-  void DataviewToData(DataView& data_view, Data& data) {
-    data_view.ch_r_x = data.ch_r_x;
-    data_view.ch_r_y = data.ch_r_y;
-    data_view.ch_l_x = data.ch_l_x;
-    data_view.ch_l_y = data.ch_l_y;
-    data_view.sw_r = data.sw_r;
-    data_view.sw_l = data.sw_l;
-    data_view.x = data.x;
-    data_view.y = data.y;
-    data_view.z = data.z;
-    data_view.press_l = data.press_l;
-    data_view.press_r = data.press_r;
-    data_view.key = data.key;
-    data_view.res = data.res;
-  }
-#endif
-
- private:
-  CMD* cmd_; /* CMD妯″潡鎸囬拡 */
-
-  Data last_data_{};     /* 上一帧数据 */
-  CMD::Data cmd_data_{}; /* 命令数据 */
-
-  /* 离线后下一帧有效数据只作为边沿基线 */
   bool offline_latched_ = false;
 #ifndef NDEBUG
-  Data data_review_; /* 鍛戒护鏁版嵁棰勮 */
+  Data data_review_; /* 閸涙垝鎶ら弫鐗堝祦妫板嫯顫� */
 #endif
-  LibXR::UART* uart_;         /* UART鎺ュ彛鎸囬拡 */
-  LibXR::Event dr16_event_;   /* 浜嬩欢澶勭悊鍣� */
-  LibXR::Thread thread_uart_; /* UART绾跨▼ */
-  LibXR::Semaphore sem_;      /* 璇绘搷浣滀俊鍙烽噺 */
-  LibXR::ReadOperation op_;   /* 璇绘搷浣滐紙闃诲鍨嬶級 */
-  LibXR::MillisecondTimestamp last_time_{}; /* 涓婃鎺ユ敹鏃堕棿 */
+  LibXR::UART* uart_;         /* UART閹恒儱褰涢幐鍥嫛 */
+  LibXR::Event dr16_event_;   /* 娴滃娆㈡径鍕倞閸ｏ拷 */
+  LibXR::Thread thread_uart_; /* UART缁捐法鈻� */
+  LibXR::Semaphore sem_;      /* 鐠囩粯鎼锋担婊€淇婇崣鐑藉櫤 */
+  LibXR::ReadOperation
+      op_; /* 鐠囩粯鎼锋担婊愮礄闂冭顢ｉ崹瀣剁礆 */
+  LibXR::MillisecondTimestamp last_time_{}; /* 娑撳﹥顐奸幒銉︽暪閺冨爼妫� */
 
-  /*--------------------------宸ュ叿鍑芥暟-------------------------------------------------*/
+  /*--------------------------瀹搞儱鍙块崙鑺ユ殶-------------------------------------------------*/
   void ActivateChangedEvents(const Data& curr_rc) {
     if (curr_rc.sw_l != this->last_data_.sw_l) {
       this->dr16_event_.Active(

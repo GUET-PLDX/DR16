@@ -5,15 +5,15 @@ DR16 遥控解析模块。将 DBUS 数据转换为 CMD 输入和事件。
 Manifest 描述：Receiver parsing
 
 ## 2. 主要函数说明
-1. ThreadDr16: UART 线程读取并分发遥控数据。
-2. ParseRC: 解析原始帧并生成 CMD::Data。
+1. ThreadDr16: UART 线程仅接收、校验并交接带时间戳的原始帧。
+2. ParseRC: 仅由 CMD 所属任务解析并应用数据及绑定事件，同帧完成后统一发布。
 3. CheckoutOffline / Offline: 离线检测与失控处理。
 4. GetEvent: 对外暴露事件绑定入口。
-5. SyncSwitchEvents: 补发当前左右拨杆。上电绑定完成后、以及遥控断链恢复的首帧会调用；键盘和鼠标边沿仍以该帧为基线，避免把按住的键当成新按下。
+5. SyncSwitchEvents: 在 CMD 所属任务补发当前左右拨杆；EventBinder 只调用 RequestSwitchSync 请求补发。断链恢复首帧同步拨杆，键盘和鼠标以该帧为基线，避免虚假按下。
 
 ## 3. 接入步骤
 1. 添加模块并确保 uart_dr16 配置正确。
-2. 把解析结果喂给 CMD。
+2. 构造函数注入 CMD，模块会注册输入消费回调；不要在 UART 线程额外 FeedRC。
 3. 在 EventBinder 中绑定开关和按键事件。
 
 标准命令流程：
@@ -46,4 +46,4 @@ Modules/DR16/DR16.hpp
 
 使用 xrobot 1.0.1 的 `module` / 有序 `args`；构造函数显式注入外设与服务，实例按依赖顺序创建。参数名和顺序以头文件中的构造函数为准，固件示例见 `User/RobotConfig/`。
 
-保留 PLDX 控制、协议、超时与离线保护。 `OnMonitor()` 由生成的监控循环直接调用。
+`OnMonitor()` 为空。所属任务通过 `CMD::UpdateInputs()` 消费输入并检查 100 ms 失联；过期帧、长间隔或缓存溢出先产生离线输出，后续新帧可恢复。8 帧原始缓存使用短锁交接，处理事件和提交 CMD 时不持交接锁。同周期撤销开火不会被后续开火帧覆盖。
