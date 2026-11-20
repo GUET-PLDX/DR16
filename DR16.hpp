@@ -412,22 +412,22 @@ class DR16 {
 
     return LibXR::ErrorCode::OK;
   }
-  CMD* cmd_; /* CMD 接收方 */
-
-  Data last_data_{};     /* 上一帧数据 */
   CMD::Data cmd_data_{}; /* 离线时提交的命令数据 */
-
-  /* 断链后下一帧有效数据只作为边沿基线 */
-  bool offline_latched_ = false;
+  Data last_data_{};     /* 上一帧数据 */
 #ifndef NDEBUG
   Data data_review_; /* 最近一帧原始解码数据，供调试查看 */
 #endif
+
+  LibXR::MillisecondTimestamp last_time_{}; /* 最近一次有效帧时间 */
+  /* 断链后下一帧有效数据只作为边沿基线 */
+  bool offline_latched_ = false;
+
+  CMD* cmd_; /* CMD 接收方 */
   LibXR::UART* uart_;                       /* UART 句柄 */
   LibXR::Event dr16_event_;                 /* 拨杆与按键事件 */
   LibXR::Thread thread_uart_;               /* UART 接收线程 */
   LibXR::Semaphore sem_;                    /* 读操作信号量 */
   LibXR::ReadOperation op_;                 /* UART 读操作 */
-  LibXR::MillisecondTimestamp last_time_{}; /* 最近一次有效帧时间 */
 
   /*-------------------------- 事件处理 --------------------------*/
   void ActivateChangedEvents(const Data& curr_rc) {
